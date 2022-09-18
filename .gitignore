@@ -1,0 +1,7 @@
+Debug/
+Release/
+doxygen/
+
+*.png
+*.logicdata
+
