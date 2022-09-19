@@ -48,11 +48,11 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include <stdio.h>
+//#include <stdio.h>
 
-#include "mydebug.h"
 #include "config.h"
 #include "remote.h"
+#include "rgb_ctl.h"
 
 /* USER CODE END Includes */
 
@@ -81,8 +81,17 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define IR_RECV_Pin LL_GPIO_PIN_0
 #define IR_RECV_GPIO_Port GPIOA
+#define IR_RECV_EXTI_IRQn EXTI0_1_IRQn
 #define PHOTORESISTOR_Pin LL_GPIO_PIN_1
 #define PHOTORESISTOR_GPIO_Port GPIOA
+#define DBG_Pin LL_GPIO_PIN_5
+#define DBG_GPIO_Port GPIOA
+#define BLUE_PWM_Pin LL_GPIO_PIN_6
+#define BLUE_PWM_GPIO_Port GPIOA
+#define GREEN_PWM_Pin LL_GPIO_PIN_7
+#define GREEN_PWM_GPIO_Port GPIOA
+#define RED_PWM_Pin LL_GPIO_PIN_1
+#define RED_PWM_GPIO_Port GPIOB
 #ifndef NVIC_PRIORITYGROUP_0
 #define NVIC_PRIORITYGROUP_0         ((uint32_t)0x00000007) /*!< 0 bit  for pre-emption priority,
                                                                  4 bits for subpriority */
@@ -96,6 +105,8 @@ void Error_Handler(void);
                                                                  0 bit  for subpriority */
 #endif
 /* USER CODE BEGIN Private defines */
+
+void dbg_print(const char* data);
 
 /* USER CODE END Private defines */
 

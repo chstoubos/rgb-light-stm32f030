@@ -47,39 +47,16 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_TIM1_Init(void);
 static void MX_ADC_Init(void);
 static void MX_TIM14_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#ifdef __GNUC__
-/* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
-     set to 'Yes') calls __io_putchar() */
-#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
-
-/**
- * @brief  Retargets the C library printf function to the USART.
- * @param  None
- * @retval None
- */
-PUTCHAR_PROTOTYPE
-{
-	/* Place your implementation of fputc here */
-	/* e.g. write a character to the USART */
-	LL_USART_TransmitData8(USART1, ch);
-	while (!LL_USART_IsActiveFlag_TXE(USART1)) ;
-	//HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 100);
-
-	return ch;
-}
 
 /**
  * @brief Oversampling and keeping 10 bit
@@ -87,20 +64,20 @@ PUTCHAR_PROTOTYPE
  * @param channel
  * @return adc value
  */
-uint16_t adc_get_meas(uint32_t channel)
+static uint16_t adc_get_meas(uint32_t channel)
 {
 	uint32_t adcval = 0;
 
 	for (unsigned int i = 0; i < ADC_MEAS_NUM; i++)
 	{
-		LL_ADC_REG_SetSequencerChannels(ADC1, channel);
-		LL_ADC_ClearFlag_EOC(ADC1);
+		LL_ADC_REG_SetSequencerChannels(PR_ADC, channel);
+		LL_ADC_ClearFlag_EOC(PR_ADC);
 
-		LL_ADC_REG_StartConversion(ADC1);
-		while (!LL_ADC_IsActiveFlag_EOC(ADC1)) ;
-		LL_ADC_ClearFlag_EOC(ADC1);
+		LL_ADC_REG_StartConversion(PR_ADC);
+		while (!LL_ADC_IsActiveFlag_EOC(PR_ADC)) ;
+		LL_ADC_ClearFlag_EOC(PR_ADC);
 
-		adcval += LL_ADC_REG_ReadConversionData12(ADC1);
+		adcval += LL_ADC_REG_ReadConversionData12(PR_ADC);
 	}
 
 	adcval /= ADC_MEAS_NUM;
@@ -109,31 +86,13 @@ uint16_t adc_get_meas(uint32_t channel)
 	return (uint16_t)adcval;
 }
 
-void rgb_light_init(void)
+void dbg_print(const char* data)
 {
-	printf("RGB Light init\n");
-
-	//TODO: timeout for EOC
-//	LL_ADC_StartCalibration(ADC1);
-//	while (!LL_ADC_IsActiveFlag_EOC(ADC1)) ;
-//	LL_ADC_
-
-	// the calibration can only be done when the ADC is disabled
-	LL_ADC_Enable(ADC1);
-
-	LL_TIM_EnableCounter(TIM1);	//buzzer
-
-	LL_TIM_OC_SetCompareCH1(TIM1, TIM1->ARR / 2);
-	LL_TIM_OC_SetCompareCH2(TIM1, TIM1->ARR / 2);
-	LL_TIM_OC_SetCompareCH3(TIM1, TIM1->ARR / 2);
-
-	LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH1N);
-	LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH2);
-	LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH3);
-
-
-	LL_TIM_EnableCounter(TIM14);
-	LL_TIM_EnableIT_UPDATE(TIM14);
+	while (*data)
+	{
+		LL_USART_TransmitData8(DBG_USART, *data++);
+		while (!LL_USART_IsActiveFlag_TXE(DBG_USART)) ;
+	}
 }
 
 /* USER CODE END 0 */
@@ -170,13 +129,17 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_TIM1_Init();
   MX_ADC_Init();
   MX_TIM14_Init();
   MX_USART1_UART_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
-  rgb_light_init();
+	dbg_print("init\n");
+
+	LL_ADC_Enable(PR_ADC);
+	remote_init();
+	rgb_ctl_init();
 
   /* USER CODE END 2 */
 
@@ -188,8 +151,17 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  printf("PR=%u\n", adc_get_meas(ADC_PR_CHANNEL));
-	  delay_ms(250);
+	  if (remote.new_data_flag)
+	  {
+		  if (remote.new_data_flag == IR_DATA_READY_FLAG_DATA) {
+			  remote_print_key(remote.ir_raw_data);
+		  }
+		  else if (remote.new_data_flag == IR_DATA_READY_FLAG_REPEAT) {
+			  dbg_print(".\n");
+		  }
+
+		  remote.new_data_flag = 0;
+	  }
   }
   /* USER CODE END 3 */
 }
@@ -301,95 +273,83 @@ static void MX_ADC_Init(void)
 }
 
 /**
-  * @brief TIM1 Initialization Function
+  * @brief TIM3 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_TIM1_Init(void)
+static void MX_TIM3_Init(void)
 {
 
-  /* USER CODE BEGIN TIM1_Init 0 */
+  /* USER CODE BEGIN TIM3_Init 0 */
 
-  /* USER CODE END TIM1_Init 0 */
+  /* USER CODE END TIM3_Init 0 */
 
   LL_TIM_InitTypeDef TIM_InitStruct = {0};
   LL_TIM_OC_InitTypeDef TIM_OC_InitStruct = {0};
-  LL_TIM_BDTR_InitTypeDef TIM_BDTRInitStruct = {0};
 
   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* Peripheral clock enable */
-  LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_TIM1);
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM3);
 
-  /* USER CODE BEGIN TIM1_Init 1 */
+  /* USER CODE BEGIN TIM3_Init 1 */
 
-  /* USER CODE END TIM1_Init 1 */
-  TIM_InitStruct.Prescaler = 47999;
+  /* USER CODE END TIM3_Init 1 */
+  TIM_InitStruct.Prescaler = 0;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 0;
+  TIM_InitStruct.Autoreload = 4799;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  TIM_InitStruct.RepetitionCounter = 0;
-  LL_TIM_Init(TIM1, &TIM_InitStruct);
-  LL_TIM_DisableARRPreload(TIM1);
-  LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH1);
+  LL_TIM_Init(TIM3, &TIM_InitStruct);
+  LL_TIM_DisableARRPreload(TIM3);
+  LL_TIM_OC_EnablePreload(TIM3, LL_TIM_CHANNEL_CH1);
   TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM1;
   TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
   TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
   TIM_OC_InitStruct.CompareValue = 0;
   TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_HIGH;
-  TIM_OC_InitStruct.OCNPolarity = LL_TIM_OCPOLARITY_HIGH;
-  TIM_OC_InitStruct.OCIdleState = LL_TIM_OCIDLESTATE_LOW;
-  TIM_OC_InitStruct.OCNIdleState = LL_TIM_OCIDLESTATE_LOW;
-  LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH1, &TIM_OC_InitStruct);
-  LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH1);
-  LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH2);
-  LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH2, &TIM_OC_InitStruct);
-  LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH2);
-  LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH3);
-  LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH3, &TIM_OC_InitStruct);
-  LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH3);
-  LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_RESET);
-  LL_TIM_DisableMasterSlaveMode(TIM1);
-  TIM_BDTRInitStruct.OSSRState = LL_TIM_OSSR_DISABLE;
-  TIM_BDTRInitStruct.OSSIState = LL_TIM_OSSI_DISABLE;
-  TIM_BDTRInitStruct.LockLevel = LL_TIM_LOCKLEVEL_OFF;
-  TIM_BDTRInitStruct.DeadTime = 0;
-  TIM_BDTRInitStruct.BreakState = LL_TIM_BREAK_DISABLE;
-  TIM_BDTRInitStruct.BreakPolarity = LL_TIM_BREAK_POLARITY_HIGH;
-  TIM_BDTRInitStruct.AutomaticOutput = LL_TIM_AUTOMATICOUTPUT_DISABLE;
-  LL_TIM_BDTR_Init(TIM1, &TIM_BDTRInitStruct);
-  /* USER CODE BEGIN TIM1_Init 2 */
+  LL_TIM_OC_Init(TIM3, LL_TIM_CHANNEL_CH1, &TIM_OC_InitStruct);
+  LL_TIM_OC_DisableFast(TIM3, LL_TIM_CHANNEL_CH1);
+  LL_TIM_OC_EnablePreload(TIM3, LL_TIM_CHANNEL_CH2);
+  LL_TIM_OC_Init(TIM3, LL_TIM_CHANNEL_CH2, &TIM_OC_InitStruct);
+  LL_TIM_OC_DisableFast(TIM3, LL_TIM_CHANNEL_CH2);
+  LL_TIM_OC_EnablePreload(TIM3, LL_TIM_CHANNEL_CH4);
+  LL_TIM_OC_Init(TIM3, LL_TIM_CHANNEL_CH4, &TIM_OC_InitStruct);
+  LL_TIM_OC_DisableFast(TIM3, LL_TIM_CHANNEL_CH4);
+  LL_TIM_SetTriggerOutput(TIM3, LL_TIM_TRGO_RESET);
+  LL_TIM_DisableMasterSlaveMode(TIM3);
+  /* USER CODE BEGIN TIM3_Init 2 */
 
-  /* USER CODE END TIM1_Init 2 */
+  /* USER CODE END TIM3_Init 2 */
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-  /**TIM1 GPIO Configuration
-  PA7   ------> TIM1_CH1N
-  PA9   ------> TIM1_CH2
-  PA10   ------> TIM1_CH3
+  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
+  /**TIM3 GPIO Configuration
+  PA6   ------> TIM3_CH1
+  PA7   ------> TIM3_CH2
+  PB1   ------> TIM3_CH4
   */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_7;
+  GPIO_InitStruct.Pin = BLUE_PWM_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
+  LL_GPIO_Init(BLUE_PWM_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_9;
+  GPIO_InitStruct.Pin = GREEN_PWM_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
+  LL_GPIO_Init(GREEN_PWM_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_10;
+  GPIO_InitStruct.Pin = RED_PWM_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
+  LL_GPIO_Init(RED_PWM_GPIO_Port, &GPIO_InitStruct);
 
 }
 
@@ -417,9 +377,9 @@ static void MX_TIM14_Init(void)
   /* USER CODE BEGIN TIM14_Init 1 */
 
   /* USER CODE END TIM14_Init 1 */
-  TIM_InitStruct.Prescaler = 3071;
+  TIM_InitStruct.Prescaler = 3095;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 1561;
+  TIM_InitStruct.Autoreload = 1549;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
   LL_TIM_Init(TIM14, &TIM_InitStruct);
   LL_TIM_DisableARRPreload(TIM14);
@@ -496,17 +456,44 @@ static void MX_USART1_UART_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  LL_EXTI_InitTypeDef EXTI_InitStruct = {0};
   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOF);
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
+  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
 
   /**/
-  GPIO_InitStruct.Pin = IR_RECV_Pin;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
+  LL_GPIO_ResetOutputPin(DBG_GPIO_Port, DBG_Pin);
+
+  /**/
+  LL_SYSCFG_SetEXTISource(LL_SYSCFG_EXTI_PORTA, LL_SYSCFG_EXTI_LINE0);
+
+  /**/
+  LL_GPIO_SetPinPull(IR_RECV_GPIO_Port, IR_RECV_Pin, LL_GPIO_PULL_NO);
+
+  /**/
+  LL_GPIO_SetPinMode(IR_RECV_GPIO_Port, IR_RECV_Pin, LL_GPIO_MODE_INPUT);
+
+  /**/
+  EXTI_InitStruct.Line_0_31 = LL_EXTI_LINE_0;
+  EXTI_InitStruct.LineCommand = ENABLE;
+  EXTI_InitStruct.Mode = LL_EXTI_MODE_IT;
+  EXTI_InitStruct.Trigger = LL_EXTI_TRIGGER_RISING_FALLING;
+  LL_EXTI_Init(&EXTI_InitStruct);
+
+  /**/
+  GPIO_InitStruct.Pin = DBG_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(IR_RECV_GPIO_Port, &GPIO_InitStruct);
+  LL_GPIO_Init(DBG_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  NVIC_SetPriority(EXTI0_1_IRQn, 0);
+  NVIC_EnableIRQ(EXTI0_1_IRQn);
 
 }
 
