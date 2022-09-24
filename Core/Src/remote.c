@@ -149,6 +149,7 @@ void on_key_press(void)
 			break;
 		case KEY_PLAY_PAUSE:
 			dbg_print("KEY_PLAY_PAUSE\n");
+			rgb_ctl_set_color(WHITE, 0);
 			//power off / sleep
 			break;
 		case KEY_VOL_DOWN:	//brightness -

@@ -106,3 +106,8 @@ void rgb_ctl_set_brightness(brightness_cmd_t cmd)
 
 	rgb_ctl_set_color(rgb_ctl.current_color, rgb_ctl.brightness_lvl_prcntg);
 }
+
+void rgb_ctl_set_speed(void)
+{
+
+}
