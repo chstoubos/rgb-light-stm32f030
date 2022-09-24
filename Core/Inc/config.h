@@ -8,8 +8,6 @@
 #ifndef INC_CONFIG_H_
 #define INC_CONFIG_H_
 
-#define delay_ms(x)						LL_mDelay(x)
-
 #define DBG_USART						USART1
 
 #define DBG_TOGGLE						LL_GPIO_TogglePin(DBG_GPIO_Port, DBG_Pin)

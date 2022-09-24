@@ -51,6 +51,7 @@ static void MX_ADC_Init(void);
 static void MX_TIM14_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_TIM16_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -95,6 +96,15 @@ void dbg_print(const char* data)
 	}
 }
 
+/**
+ * Remote control for user input
+ * fixed, effects (+ - brightness)
+ * effects should have speed control (previous next)
+ * no debounce on some keys, eg brightness speed. implement debouncing by counts of repeat
+ * timer mode for night blip blip for verification
+ * 2 off modes as an ambient 1mA
+ */
+
 /* USER CODE END 0 */
 
 /**
@@ -133,6 +143,7 @@ int main(void)
   MX_TIM14_Init();
   MX_USART1_UART_Init();
   MX_TIM3_Init();
+  MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
 
 	dbg_print("init\n");
@@ -151,16 +162,10 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  if (remote.new_data_flag)
+	  if (remote.on_key_press_flag)
 	  {
-		  if (remote.new_data_flag == IR_DATA_READY_FLAG_DATA) {
-			  remote_print_key(remote.ir_raw_data);
-		  }
-		  else if (remote.new_data_flag == IR_DATA_READY_FLAG_REPEAT) {
-			  dbg_print(".\n");
-		  }
-
-		  remote.new_data_flag = 0;
+		  on_key_press();
+		  remote.on_key_press_flag = 0;
 	  }
   }
   /* USER CODE END 3 */
@@ -386,6 +391,43 @@ static void MX_TIM14_Init(void)
   /* USER CODE BEGIN TIM14_Init 2 */
 
   /* USER CODE END TIM14_Init 2 */
+
+}
+
+/**
+  * @brief TIM16 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM16_Init(void)
+{
+
+  /* USER CODE BEGIN TIM16_Init 0 */
+
+  /* USER CODE END TIM16_Init 0 */
+
+  LL_TIM_InitTypeDef TIM_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_TIM16);
+
+  /* TIM16 interrupt Init */
+  NVIC_SetPriority(TIM16_IRQn, 0);
+  NVIC_EnableIRQ(TIM16_IRQn);
+
+  /* USER CODE BEGIN TIM16_Init 1 */
+
+  /* USER CODE END TIM16_Init 1 */
+  TIM_InitStruct.Prescaler = 0;
+  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
+  TIM_InitStruct.Autoreload = 4799;
+  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+  TIM_InitStruct.RepetitionCounter = 0;
+  LL_TIM_Init(TIM16, &TIM_InitStruct);
+  LL_TIM_DisableARRPreload(TIM16);
+  /* USER CODE BEGIN TIM16_Init 2 */
+
+  /* USER CODE END TIM16_Init 2 */
 
 }
 

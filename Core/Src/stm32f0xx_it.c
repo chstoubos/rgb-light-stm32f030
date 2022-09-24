@@ -190,7 +190,7 @@ void EXTI0_1_IRQHandler(void)
 				else if (REMOTE_TIMER->CNT > COUNT_GAP_REP_MIN && REMOTE_TIMER->CNT < COUNT_GAP_REP_MAX)
 				{
 					remote.state = IR_IDLE;
-					remote.new_data_flag = IR_DATA_READY_FLAG_REPEAT;
+					remote.on_key_press_flag = IR_DATA_READY_FLAG_REPEAT;
 				}
 			}
 			break;
@@ -229,7 +229,7 @@ void EXTI0_1_IRQHandler(void)
 			//endiamesi katastasi, edw tha kanw jump otan trww timeout h paei kati lathos
 			remote.state = IR_IDLE;
 			remote.ir_raw_data = ir_data;
-			remote.new_data_flag = IR_DATA_READY_FLAG_DATA;
+			remote.on_key_press_flag = IR_DATA_READY_FLAG_DATA;
 			break;
 		default:
 			break;
@@ -261,6 +261,19 @@ void TIM14_IRQHandler(void)
   /* USER CODE BEGIN TIM14_IRQn 1 */
 
   /* USER CODE END TIM14_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM16 global interrupt.
+  */
+void TIM16_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM16_IRQn 0 */
+
+  /* USER CODE END TIM16_IRQn 0 */
+  /* USER CODE BEGIN TIM16_IRQn 1 */
+
+  /* USER CODE END TIM16_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

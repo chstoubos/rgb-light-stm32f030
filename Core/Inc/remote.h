@@ -12,6 +12,7 @@
 
 #include "main.h"
 
+#define 	NUM_KEYS					21
 #define		KEY_CH_MINUS				0xFFA25D
 #define		KEY_CH						0xFF629D
 #define		KEY_CH_PLUS					0xFFE21D
@@ -72,12 +73,13 @@ enum ir_states {
 typedef struct {
 	volatile uint8_t state;
 	uint32_t ir_raw_data;
-	volatile uint8_t new_data_flag;
+	volatile uint8_t on_key_press_flag;
 } remote_t;
 
 extern remote_t remote;
 
 void remote_init(void);
 void remote_print_key(uint32_t);
+void on_key_press(void);
 
 #endif /* REMOTECONTROL_H_ */

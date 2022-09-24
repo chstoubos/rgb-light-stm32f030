@@ -106,6 +106,8 @@ void Error_Handler(void);
 #endif
 /* USER CODE BEGIN Private defines */
 
+#define delay_ms(x)					LL_mDelay(x)
+
 void dbg_print(const char* data);
 
 /* USER CODE END Private defines */
