@@ -103,6 +103,9 @@ void remote_on_key_press(void)
 	}
 }
 
+/**
+ * Place inside IR pin interrupt
+ */
 inline void remote_ctl(void)
 {
 	static int8_t ir_data_bit_cnt = 0;

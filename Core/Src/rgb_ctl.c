@@ -137,6 +137,9 @@ void rgb_ctl_rainbow_set_speed(cmd_t cmd)
 	}
 }
 
+/**
+ * Place inside timer interrupt
+ */
 inline void rgb_ctl_rainbow(void)
 {
 	int32_t new_pwm = *rgb_pwm_vals[rainbow_channels[rgb_ctl.rainbow_current_step]] +
