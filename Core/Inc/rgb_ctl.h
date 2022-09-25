@@ -11,10 +11,15 @@
 #include "main.h"
 
 #define RGB_CTL_TIMER			TIM3
+#define EFFECT_TIMER			TIM16
 
 #define RED_CHANNEL 			LL_TIM_CHANNEL_CH4
 #define GREEN_CHANNEL			LL_TIM_CHANNEL_CH2
 #define BLUE_CHANNEL			LL_TIM_CHANNEL_CH1
+
+#define PWM_VAL_RED				&RGB_CTL_TIMER->CCR4
+#define PWM_VAL_GREEN			&RGB_CTL_TIMER->CCR2
+#define PWM_VAL_BLUE			&RGB_CTL_TIMER->CCR1
 
 #define RED_PWM(x)				LL_TIM_OC_SetCompareCH4(RGB_CTL_TIMER,x)
 #define GREEN_PWM(x)			LL_TIM_OC_SetCompareCH2(RGB_CTL_TIMER,x)
@@ -26,6 +31,8 @@
 #define BRIGHTNESS_STEPS		5
 #define DEFAULT_BRIGHTNESS		100U
 #define DEFAULT_COLOR			WHITE
+
+#define EFFECT_PWM_STEP			5U
 
 typedef enum {
 	FIXED = 0,
@@ -59,7 +66,11 @@ typedef struct {
 	uint16_t b;
 }rgb_t;
 
-typedef struct {;
+typedef struct {
+	uint8_t current_step;
+}rainbow_effect_t;
+
+typedef struct {
 	rgb_mode_t mode;
 	uint8_t brightness_lvl_prcntg;
 	fixed_colors_t current_color;
@@ -71,5 +82,8 @@ extern volatile uint8_t effect_flag;
 void rgb_ctl_init(void);
 void rgb_ctl_set_color(int color, uint8_t brightness);
 void rgb_ctl_set_brightness(brightness_cmd_t cmd);
+void rgb_ctl_rainbow_start(void);
+void rgb_ctl_rainbow_stop(void);
+void rgb_ctl_rainbow(void);
 
 #endif /* INC_RGB_CTL_H_ */

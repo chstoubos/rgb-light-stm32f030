@@ -35,10 +35,12 @@ void on_key_press(void)
 
 	switch (remote.ir_raw_data) {
 		case KEY_CH_MINUS:
+			rgb_ctl_rainbow_start();
 			break;
 		case KEY_CH:
 			break;
 		case KEY_CH_PLUS:
+			rgb_ctl_rainbow_stop();
 			break;
 		case KEY_PREV:
 			//speed - for effect

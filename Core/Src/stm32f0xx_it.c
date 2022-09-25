@@ -270,6 +270,11 @@ void TIM16_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM16_IRQn 0 */
 
+	if (LL_TIM_IsActiveFlag_UPDATE(TIM16)) {
+		LL_TIM_ClearFlag_UPDATE(TIM16);
+		rgb_ctl_rainbow();
+	}
+
   /* USER CODE END TIM16_IRQn 0 */
   /* USER CODE BEGIN TIM16_IRQn 1 */
 
