@@ -103,3 +103,90 @@ void on_key_press(void)
 	}
 }
 
+inline void remote_ctl(void)
+{
+	static int8_t ir_data_bit_cnt = 0;
+	static uint32_t ir_data;
+
+	switch (remote.state)
+	{
+		case IR_IDLE:		//default state - waiting for initial signal
+			if(IR_PIN_LOW)
+			{
+				remote.state = IR_BURST;
+			}
+			break;
+		case IR_BURST:
+			if(IR_PIN_HIGH)
+			{
+				//9ms of burst pulses in 38KHz freq
+				if(REMOTE_TIMER->CNT > COUNT_BURST_MIN && REMOTE_TIMER->CNT < COUNT_BURST_MAX)
+				{
+					remote.state = IR_GAP;
+				}
+			}
+			break;
+		case IR_GAP:
+			// if GAP 4500us we have data, if GAP 2200us it is a repeat
+			if(IR_PIN_LOW)
+			{
+				//4.5ms space (data)
+				if(REMOTE_TIMER->CNT > COUNT_GAP_MIN && REMOTE_TIMER->CNT < COUNT_GAP_MAX)
+				{
+					remote.state = IR_DATA;
+	//LED_PIN_HIGH;LED_PIN_LOW;
+					ir_data_bit_cnt = 0;
+					ir_data = 0;
+				}
+				// 2.2ms (repeat)
+				else if (REMOTE_TIMER->CNT > COUNT_GAP_REP_MIN && REMOTE_TIMER->CNT < COUNT_GAP_REP_MAX)
+				{
+					remote.state = IR_IDLE;
+					remote.on_key_press_flag = IR_DATA_READY_FLAG_REPEAT;
+				}
+			}
+			break;
+		case IR_DATA:
+			if(IR_PIN_LOW)
+			{
+				/*
+					we are expecting 32 bit of data
+					8bit address - 8bit inverted address - 8bit data - 8bit inverted data [LSB FIRST]
+					562.5us burst pulse followed by a 562.5us space is counted as a logical 0 (1.125 ms total)
+					562.5us burst pulse followed by a 3x562.5us space is counted as a logical 1 (2.25ms total)
+
+					basika ston diko mou sensora einai to anapodo....
+				*/
+
+				ir_data <<= 1;
+
+				if(REMOTE_TIMER->CNT > COUNT_LOGICAL0_MIN && REMOTE_TIMER->CNT < COUNT_LOGICAL0_MAX)
+				{
+
+				}
+				else
+				{
+					//logical 1
+					//ir_data[ir_data_byte_cnt] |= (1<<ir_data_bit_cnt);
+					ir_data |= 0x01;
+				}
+				if (++ir_data_bit_cnt > 31)
+				{
+					//data are ready change state
+					remote.state = IR_FINISH;
+				}
+			}
+			break;
+		case IR_FINISH:
+			//endiamesi katastasi, edw tha kanw jump otan trww timeout h paei kati lathos
+			remote.state = IR_IDLE;
+			remote.ir_raw_data = ir_data;
+			remote.on_key_press_flag = IR_DATA_READY_FLAG_DATA;
+			break;
+		default:
+			break;
+	}
+
+	REMOTE_TIMER->CNT = 0;
+}
+

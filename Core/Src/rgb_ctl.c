@@ -167,22 +167,3 @@ inline void rgb_ctl_rainbow(void)
 
 	*rgb_pwm_vals[rainbow_channels[rgb_ctl.rainbow_current_step]] = new_pwm;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
