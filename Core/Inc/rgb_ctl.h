@@ -11,7 +11,7 @@
 #include "main.h"
 
 #define RGB_CTL_TIMER			TIM3
-#define EFFECT_TIMER			TIM16
+#define RAINBOW_TIMER			TIM16
 
 #define RED_CHANNEL 			LL_TIM_CHANNEL_CH4
 #define GREEN_CHANNEL			LL_TIM_CHANNEL_CH2
@@ -21,24 +21,23 @@
 #define PWM_VAL_GREEN			&RGB_CTL_TIMER->CCR2
 #define PWM_VAL_BLUE			&RGB_CTL_TIMER->CCR1
 
-#define RED_PWM(x)				LL_TIM_OC_SetCompareCH4(RGB_CTL_TIMER,x)
-#define GREEN_PWM(x)			LL_TIM_OC_SetCompareCH2(RGB_CTL_TIMER,x)
-#define BLUE_PWM(x)				LL_TIM_OC_SetCompareCH1(RGB_CTL_TIMER,x)
-
 #warning: This is hardcoded, otherwise cannot use the array definition
 #define PWM_MAX					(4799 + 1)
 
-#define BRIGHTNESS_STEPS		5
 #define DEFAULT_BRIGHTNESS		100U
 #define DEFAULT_COLOR			WHITE
 
-#define EFFECT_PWM_STEP			1U
+#define BRIGHTNESS_STEP			5
+#define BRIGHTNESS_STEP_MIN		1
+
+#define RAINBOW_PWM_STEP_MIN	1U
+#define RAINBOW_PWM_STEP_MAX	1000U
 
 typedef enum {
 	FIXED = 0,
-	EFFECT,
-	SLEEP_TIMER_ON,
-	SLEEP_TIMER_OFF
+	RAINBOW,
+	SLEEP_TIMER,
+	SLEEP_NO_TIMER
 }rgb_mode_t;
 
 typedef enum {
@@ -57,9 +56,9 @@ typedef enum {
 typedef enum {
 	STEP_UP = 0,
 	STEP_DOWN
-}brightness_cmd_t;
+}cmd_t;
 
-// 0-4800 ARR
+// 0-4800 PWM ARR
 typedef struct {
 	uint16_t r;
 	uint16_t g;
@@ -67,23 +66,20 @@ typedef struct {
 }rgb_t;
 
 typedef struct {
-	uint8_t current_step;
-}rainbow_effect_t;
-
-typedef struct {
 	rgb_mode_t mode;
-	uint8_t brightness_lvl_prcntg;
+	int8_t brightness_lvl_prcntg;
 	fixed_colors_t current_color;
+
+	uint8_t rainbow_current_step;
+	uint16_t rainbow_pwm_step;
 }rgb_ctl_t;
 
-extern rgb_ctl_t rgb_ctl;
-extern volatile uint8_t effect_flag;
-
 void rgb_ctl_init(void);
-void rgb_ctl_set_color(int color, uint8_t brightness);
-void rgb_ctl_set_brightness(brightness_cmd_t cmd);
+void rgb_ctl_set_color(int color, int8_t brightness);
+void rgb_ctl_set_brightness(cmd_t cmd);
 void rgb_ctl_rainbow_start(void);
 void rgb_ctl_rainbow_stop(void);
+void rgb_ctl_rainbow_set_speed(cmd_t cmd);
 void rgb_ctl_rainbow(void);
 
 #endif /* INC_RGB_CTL_H_ */

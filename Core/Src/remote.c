@@ -44,18 +44,20 @@ void on_key_press(void)
 			break;
 		case KEY_PREV:
 			//speed - for effect
+			rgb_ctl_rainbow_set_speed(STEP_DOWN);
 			break;
 		case KEY_NEXT:
+			rgb_ctl_rainbow_set_speed(STEP_UP);
 			//speed + for effect
 			break;
 		case KEY_PLAY_PAUSE:
 			rgb_ctl_set_color(WHITE, 0);
 			//power off / sleep
 			break;
-		case KEY_VOL_DOWN:	//brightness -
+		case KEY_VOL_DOWN:
 			rgb_ctl_set_brightness(STEP_DOWN);
 			break;
-		case KEY_VOL_UP:	//brightness +
+		case KEY_VOL_UP:
 			rgb_ctl_set_brightness(STEP_UP);
 			break;
 		case KEY_EQ:
@@ -63,7 +65,7 @@ void on_key_press(void)
 		case KEY_0:
 			rgb_ctl_set_color(WHITE, 100);
 			break;
-		case KEY_100:
+		case KEY_100: 	//night mode
 			// sleep w/ timer
 			break;
 		case KEY_200:

@@ -8,7 +8,6 @@
 #include "main.h"
 
 rgb_ctl_t rgb_ctl = {0};
-rainbow_effect_t rainbow;
 
 rgb_t rgb[] = {
 		{PWM_MAX, PWM_MAX, PWM_MAX},	// white
@@ -50,32 +49,49 @@ void rgb_ctl_init(void)
  * @param color: enum fixed_colors_t
  * @param brightness: 0-100
  */
-void rgb_ctl_set_color(int color, uint8_t brightness)
+void rgb_ctl_set_color(int color, int8_t brightness)
 {
+	rgb_ctl_rainbow_stop();
+
 	rgb_ctl.mode = FIXED;
 	rgb_ctl.current_color = color;
 	rgb_ctl.brightness_lvl_prcntg = brightness;
 
-	RED_PWM(rgb[rgb_ctl.current_color].r * rgb_ctl.brightness_lvl_prcntg / 100);
-	GREEN_PWM(rgb[rgb_ctl.current_color].g * rgb_ctl.brightness_lvl_prcntg / 100);
-	BLUE_PWM(rgb[rgb_ctl.current_color].b * rgb_ctl.brightness_lvl_prcntg / 100);
+	*rgb_pwm_vals[0] = rgb[rgb_ctl.current_color].r * rgb_ctl.brightness_lvl_prcntg / 100;
+	*rgb_pwm_vals[1] = rgb[rgb_ctl.current_color].g * rgb_ctl.brightness_lvl_prcntg / 100;
+	*rgb_pwm_vals[2] = rgb[rgb_ctl.current_color].b * rgb_ctl.brightness_lvl_prcntg / 100;
 }
 
-void rgb_ctl_set_brightness(brightness_cmd_t cmd)
+void rgb_ctl_set_brightness(cmd_t cmd)
 {
+	if (rgb_ctl.mode == RAINBOW) {
+		return;
+	}
+
 	if (cmd == STEP_UP) {
-		rgb_ctl.brightness_lvl_prcntg += BRIGHTNESS_STEPS;
+		// if the brightness is below 5%, step up 1% each time
+		if (rgb_ctl.brightness_lvl_prcntg <= BRIGHTNESS_STEP) {
+			rgb_ctl.brightness_lvl_prcntg += BRIGHTNESS_STEP_MIN;
+		}
+		else {
+			rgb_ctl.brightness_lvl_prcntg += BRIGHTNESS_STEP;
+		}
 
 		if (rgb_ctl.brightness_lvl_prcntg > 100) {
 			rgb_ctl.brightness_lvl_prcntg = 100;
 		}
 	}
 	else {
-		if (rgb_ctl.brightness_lvl_prcntg <= BRIGHTNESS_STEPS) {
-			rgb_ctl.brightness_lvl_prcntg = 0;
+		// if the brightness is below 5%, step down 1% each time
+		if (rgb_ctl.brightness_lvl_prcntg <= BRIGHTNESS_STEP) {
+			rgb_ctl.brightness_lvl_prcntg -= BRIGHTNESS_STEP_MIN;
 		}
 		else {
-			rgb_ctl.brightness_lvl_prcntg -= BRIGHTNESS_STEPS;
+			rgb_ctl.brightness_lvl_prcntg -= BRIGHTNESS_STEP;
+		}
+
+		if (rgb_ctl.brightness_lvl_prcntg < 0) {
+			rgb_ctl.brightness_lvl_prcntg = 0;
 		}
 	}
 
@@ -84,25 +100,47 @@ void rgb_ctl_set_brightness(brightness_cmd_t cmd)
 
 void rgb_ctl_rainbow_start(void)
 {
-	rainbow.current_step = 0;
+	rgb_ctl.mode = RAINBOW;
+	rgb_ctl.rainbow_current_step = 0;
+	rgb_ctl.rainbow_pwm_step = RAINBOW_PWM_STEP_MIN;
 
 	*rgb_pwm_vals[0] = PWM_MAX;
 	*rgb_pwm_vals[1] = 0;
 	*rgb_pwm_vals[2] = 0;
 
-	LL_TIM_EnableCounter(EFFECT_TIMER);
-	LL_TIM_EnableIT_UPDATE(EFFECT_TIMER);
+	LL_TIM_EnableCounter(RAINBOW_TIMER);
+	LL_TIM_EnableIT_UPDATE(RAINBOW_TIMER);
 }
 
 void rgb_ctl_rainbow_stop(void)
 {
-	LL_TIM_DisableCounter(EFFECT_TIMER);
+	LL_TIM_DisableIT_UPDATE(RAINBOW_TIMER);
+	LL_TIM_DisableCounter(RAINBOW_TIMER);
+}
+
+void rgb_ctl_rainbow_set_speed(cmd_t cmd)
+{
+	if (cmd == STEP_UP) {
+		rgb_ctl.rainbow_pwm_step += RAINBOW_PWM_STEP_MIN;
+
+		if (rgb_ctl.rainbow_pwm_step > RAINBOW_PWM_STEP_MAX) {
+			rgb_ctl.rainbow_pwm_step = RAINBOW_PWM_STEP_MAX;
+		}
+	}
+	else {
+		if (rgb_ctl.rainbow_pwm_step <= RAINBOW_PWM_STEP_MIN) {
+			rgb_ctl.rainbow_pwm_step = RAINBOW_PWM_STEP_MIN;
+		}
+		else {
+			rgb_ctl.rainbow_pwm_step -= RAINBOW_PWM_STEP_MIN;
+		}
+	}
 }
 
 inline void rgb_ctl_rainbow(void)
 {
-	int32_t new_pwm = *rgb_pwm_vals[rainbow_channels[rainbow.current_step]] +
-			rainbow_channels_direction[rainbow.current_step] * EFFECT_PWM_STEP;
+	int32_t new_pwm = *rgb_pwm_vals[rainbow_channels[rgb_ctl.rainbow_current_step]] +
+			rainbow_channels_direction[rgb_ctl.rainbow_current_step] * rgb_ctl.rainbow_pwm_step;
 
 	unsigned int next_step = 0;
 	if (new_pwm < 0)
@@ -119,15 +157,15 @@ inline void rgb_ctl_rainbow(void)
 
 	if (next_step)
 	{
-		if (rainbow.current_step >= ((sizeof(rainbow_channels) / sizeof(rainbow_channels[0])) -1)) {
-			rainbow.current_step = 0;
+		if (rgb_ctl.rainbow_current_step >= ((sizeof(rainbow_channels) / sizeof(rainbow_channels[0])) -1)) {
+			rgb_ctl.rainbow_current_step = 0;
 		}
 		else {
-			rainbow.current_step++;
+			rgb_ctl.rainbow_current_step++;
 		}
 	}
 
-	*rgb_pwm_vals[rainbow_channels[rainbow.current_step]] = new_pwm;
+	*rgb_pwm_vals[rainbow_channels[rgb_ctl.rainbow_current_step]] = new_pwm;
 }
 
 
