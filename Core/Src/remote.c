@@ -25,7 +25,7 @@ static uint8_t is_no_repeat_key(uint32_t key)
 	return 1;
 }
 
-void on_key_press(void)
+void remote_on_key_press(void)
 {
 	if (remote.on_key_press_flag == IR_DATA_READY_FLAG_REPEAT) {
 		if (is_no_repeat_key(remote.ir_raw_data)) {

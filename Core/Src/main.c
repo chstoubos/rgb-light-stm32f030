@@ -162,7 +162,7 @@ int main(void)
 
 	  if (remote.on_key_press_flag)
 	  {
-		  on_key_press();
+		  remote_on_key_press();
 		  remote.on_key_press_flag = 0;
 	  }
   }
@@ -372,10 +372,6 @@ static void MX_TIM14_Init(void)
 
   /* Peripheral clock enable */
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM14);
-
-  /* TIM14 interrupt Init */
-  NVIC_SetPriority(TIM14_IRQn, 0);
-  NVIC_EnableIRQ(TIM14_IRQn);
 
   /* USER CODE BEGIN TIM14_Init 1 */
 

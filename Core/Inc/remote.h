@@ -79,7 +79,7 @@ typedef struct {
 extern remote_t remote;
 
 void remote_init(void);
-void on_key_press(void);
+void remote_on_key_press(void);
 void remote_ctl(void);
 
 #endif /* REMOTECONTROL_H_ */
