@@ -48,9 +48,6 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-//#include <stdio.h>
-
-#include "config.h"
 #include "remote.h"
 #include "rgb_ctl.h"
 
@@ -107,6 +104,15 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 
 #define delay_ms(x)					LL_mDelay(x)
+
+#define DBG_USART					USART1
+#define DBG_TOGGLE					LL_GPIO_TogglePin(DBG_GPIO_Port, DBG_Pin)
+#define DBG_HIGH					LL_GPIO_SetOutputPin(DBG_GPIO_Port, DBG_Pin)
+#define DBG_LOW						LL_GPIO_ResetOutputPin(DBG_GPIO_Port, DBG_Pin)
+
+#define ADC_MEAS_NUM					16
+#define PR_ADC							ADC1
+#define ADC_PR_CHANNEL					LL_ADC_CHANNEL_1
 
 void dbg_print(const char* data);
 

@@ -5,13 +5,10 @@
  *      Author: chris
  */
 
-#include "rgb_ctl.h"
 #include "main.h"
-#include <stdlib.h>
 
 rgb_ctl_t rgb_ctl = {0};
 rainbow_effect_t rainbow;
-volatile uint8_t effect_flag;
 
 rgb_t rgb[] = {
 		{PWM_MAX, PWM_MAX, PWM_MAX},	// white

@@ -146,8 +146,6 @@ int main(void)
   MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
 
-	dbg_print("init\n");
-
 	LL_ADC_Enable(PR_ADC);
 	remote_init();
 	rgb_ctl_init();

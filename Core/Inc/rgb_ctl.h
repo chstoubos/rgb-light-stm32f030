@@ -32,7 +32,7 @@
 #define DEFAULT_BRIGHTNESS		100U
 #define DEFAULT_COLOR			WHITE
 
-#define EFFECT_PWM_STEP			5U
+#define EFFECT_PWM_STEP			1U
 
 typedef enum {
 	FIXED = 0,
