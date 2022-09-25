@@ -111,7 +111,7 @@ void remote_print_key(uint32_t key)
 	}
 }
 
-static uint8_t need_debouncing(uint32_t key)
+static uint8_t is_no_repeat_key(uint32_t key)
 {
 	if (key == KEY_VOL_UP || key == KEY_VOL_DOWN ||
 		key == KEY_NEXT || key == KEY_PREV) {
@@ -124,7 +124,7 @@ static uint8_t need_debouncing(uint32_t key)
 void on_key_press(void)
 {
 	if (remote.on_key_press_flag == IR_DATA_READY_FLAG_REPEAT) {
-		if (need_debouncing(remote.ir_raw_data)) {
+		if (is_no_repeat_key(remote.ir_raw_data)) {
 			return;
 		}
 	}

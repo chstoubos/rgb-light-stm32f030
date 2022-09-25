@@ -9,9 +9,23 @@
 #include "main.h"
 
 rgb_ctl_t rgb_ctl = {0};
+volatile uint8_t effect_flag;
+
+rgb_t rgb[] = {
+		{PWM_MAX, PWM_MAX, PWM_MAX},	// white
+		{PWM_MAX, 0, 0},				// red
+		{0, PWM_MAX, 0},				// green
+		{0, PWM_MAX, 0},				// blue
+		{PWM_MAX / 2, 0, PWM_MAX},		// purple
+		{PWM_MAX, PWM_MAX, 0},			// yellow
+		{0, PWM_MAX / 2, PWM_MAX},		// cyan
+		{PWM_MAX, PWM_MAX / 4, 0},		// orange
+		{PWM_MAX, 0, PWM_MAX / 4},		// pink
+		{0, PWM_MAX, PWM_MAX / 2}		// turquise
+};
 
 /**
- * Initialize timer with 3-channel PWM 10KHz
+ *
  */
 void rgb_ctl_init(void)
 {
@@ -24,66 +38,20 @@ void rgb_ctl_init(void)
 	LL_TIM_CC_EnableChannel(RGB_CTL_TIMER, BLUE_CHANNEL);
 }
 
-void rgb_ctl_set_color(fixed_colors_t color, uint8_t brightness)
+/**
+ *
+ * @param color: enum fixed_colors_t
+ * @param brightness: 0-100
+ */
+void rgb_ctl_set_color(int color, uint8_t brightness)
 {
 	rgb_ctl.mode = FIXED;
 	rgb_ctl.current_color = color;
 	rgb_ctl.brightness_lvl_prcntg = brightness;
 
-	switch (color) {
-		case WHITE:
-			RED_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			GREEN_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			BLUE_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			break;
-		case RED:
-			RED_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			GREEN_PWM(0);
-			BLUE_PWM(0);
-			break;
-		case GREEN:
-			RED_PWM(0);
-			GREEN_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			BLUE_PWM(0);
-			break;
-		case BLUE:
-			RED_PWM(0);
-			GREEN_PWM(0);
-			BLUE_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			break;
-		case PURPLE:
-			RED_PWM((PWM_MAX / 2) * rgb_ctl.brightness_lvl_prcntg / 100);
-			GREEN_PWM(0);
-			BLUE_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			break;
-		case YELLOW:
-			RED_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			GREEN_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			BLUE_PWM(0);
-			break;
-		case CYAN:
-			RED_PWM(0);
-			GREEN_PWM((PWM_MAX / 2) * rgb_ctl.brightness_lvl_prcntg / 100);
-			BLUE_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			break;
-		case ORANGE:
-			RED_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			GREEN_PWM((PWM_MAX / 4) * rgb_ctl.brightness_lvl_prcntg / 100);
-			BLUE_PWM(0);
-			break;
-		case PINK:
-			RED_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			GREEN_PWM(0);
-			BLUE_PWM((PWM_MAX / 4) * rgb_ctl.brightness_lvl_prcntg / 100);
-			break;
-		case TURQUISE:
-			RED_PWM(0);
-			GREEN_PWM(PWM_MAX * rgb_ctl.brightness_lvl_prcntg / 100);
-			BLUE_PWM((PWM_MAX / 2) * rgb_ctl.brightness_lvl_prcntg / 100);
-			break;
-		default:
-			break;
-	}
+	RED_PWM(rgb[rgb_ctl.current_color].r * rgb_ctl.brightness_lvl_prcntg / 100);
+	GREEN_PWM(rgb[rgb_ctl.current_color].g * rgb_ctl.brightness_lvl_prcntg / 100);
+	BLUE_PWM(rgb[rgb_ctl.current_color].b * rgb_ctl.brightness_lvl_prcntg / 100);
 }
 
 void rgb_ctl_set_brightness(brightness_cmd_t cmd)
