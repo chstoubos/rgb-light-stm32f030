@@ -27,7 +27,6 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f0xx_ll_adc.h"
 #include "stm32f0xx_ll_crs.h"
 #include "stm32f0xx_ll_rcc.h"
 #include "stm32f0xx_ll_bus.h"
@@ -109,10 +108,6 @@ void Error_Handler(void);
 #define DBG_TOGGLE					LL_GPIO_TogglePin(DBG_GPIO_Port, DBG_Pin)
 #define DBG_HIGH					LL_GPIO_SetOutputPin(DBG_GPIO_Port, DBG_Pin)
 #define DBG_LOW						LL_GPIO_ResetOutputPin(DBG_GPIO_Port, DBG_Pin)
-
-#define ADC_MEAS_NUM					16
-#define PR_ADC							ADC1
-#define ADC_PR_CHANNEL					LL_ADC_CHANNEL_1
 
 void dbg_print(const char* data);
 
