@@ -9,7 +9,8 @@
 
 rgb_ctl_t rgb_ctl = {0};
 
-rgb_t rgb[] = {
+//default colors
+rgb_t default_rgb[COLORS_NUM] = {
 		{PWM_MAX, PWM_MAX, PWM_MAX},	// white
 		{PWM_MAX, 0, 0},				// red
 		{0, PWM_MAX, 0},				// green
@@ -57,9 +58,9 @@ void rgb_ctl_set_color(int color, int8_t brightness)
 	rgb_ctl.current_color = color;
 	rgb_ctl.brightness_lvl_prcntg = brightness;
 
-	*rgb_pwm_vals[0] = rgb[rgb_ctl.current_color].r * rgb_ctl.brightness_lvl_prcntg / 100;
-	*rgb_pwm_vals[1] = rgb[rgb_ctl.current_color].g * rgb_ctl.brightness_lvl_prcntg / 100;
-	*rgb_pwm_vals[2] = rgb[rgb_ctl.current_color].b * rgb_ctl.brightness_lvl_prcntg / 100;
+	*rgb_pwm_vals[0] = default_rgb[rgb_ctl.current_color].r * rgb_ctl.brightness_lvl_prcntg / 100;
+	*rgb_pwm_vals[1] = default_rgb[rgb_ctl.current_color].g * rgb_ctl.brightness_lvl_prcntg / 100;
+	*rgb_pwm_vals[2] = default_rgb[rgb_ctl.current_color].b * rgb_ctl.brightness_lvl_prcntg / 100;
 }
 
 void rgb_ctl_set_brightness(cmd_t cmd)

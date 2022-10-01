@@ -13,6 +13,8 @@
 #define RGB_CTL_TIMER			TIM3
 #define RAINBOW_TIMER			TIM16
 
+#define COLORS_NUM				10
+
 #define RED_CHANNEL 			LL_TIM_CHANNEL_CH4
 #define GREEN_CHANNEL			LL_TIM_CHANNEL_CH2
 #define BLUE_CHANNEL			LL_TIM_CHANNEL_CH1
@@ -73,6 +75,8 @@ typedef struct {
 	uint8_t rainbow_current_step;
 	uint16_t rainbow_pwm_step;
 }rgb_ctl_t;
+
+extern rgb_t default_rgb[COLORS_NUM];
 
 void rgb_ctl_init(void);
 void rgb_ctl_set_color(int color, int8_t brightness);

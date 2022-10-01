@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "stm32f0xx_ll_i2c.h"
 #include "stm32f0xx_ll_crs.h"
 #include "stm32f0xx_ll_rcc.h"
 #include "stm32f0xx_ll_bus.h"
@@ -49,6 +50,7 @@ extern "C" {
 
 #include "remote.h"
 #include "rgb_ctl.h"
+#include "eeprom.h"
 
 /* USER CODE END Includes */
 
