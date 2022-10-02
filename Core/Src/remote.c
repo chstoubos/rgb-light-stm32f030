@@ -39,7 +39,7 @@ static void on_nums_repeat(uint32_t key, uint32_t last_key)
 	if (key == last_key) {
 		remote.key_presses_num++;
 
-		if (remote.key_presses_num >= 20) {
+		if (remote.key_presses_num >= LONG_PRESS_KEY_PRESS_NUMS) {
 			save_cfg_flag = 1;
 			remote.key_presses_num = 0;
 		}

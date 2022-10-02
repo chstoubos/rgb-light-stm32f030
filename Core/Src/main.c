@@ -117,11 +117,11 @@ int main(void)
 
 	delay_ms(50);
 
-//	eeprom_load();
-//	if (eeprom.cfg.version != EEPROM_VERSION) {
-//		eeprom_set_defaults();
-//		eeprom_save();
-//	}
+	eeprom_load();
+	if (eeprom.cfg.version != EEPROM_VERSION) {
+		eeprom_set_defaults();
+		eeprom_save();
+	}
 
   /* USER CODE END 2 */
 

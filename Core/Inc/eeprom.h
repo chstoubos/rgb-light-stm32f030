@@ -13,7 +13,7 @@
 #define EEPROM_PAGE_SIZE				32U
 #define EEPROM_WRITE_PAGE_DELAY_ms		8U		//4ms is marginal so x2
 
-#define EEPROM_VERSION					0x00
+#define EEPROM_VERSION					0x01
 
 typedef struct {
 	uint16_t version;

@@ -36,6 +36,8 @@
 #define		KEY_9						0xFF52AD
 #define		KEY_REPEAT					0xFFFFFFFF
 
+#define 	LONG_PRESS_KEY_PRESS_NUMS	50U
+
 #define 	REMOTE_TIMER				TIM14
 #define		TCNT_FROM_US(t)				(t/64)						//64us per tick
 
