@@ -143,22 +143,12 @@ void eeprom_set_defaults(void)
 	}
 }
 
-#define LEN		64
 void eeprom_load(void)
 {
-	uint8_t buf[LEN];
-//	eeprom_read(0, eeprom.buf, sizeof(eeprom.buf) / sizeof(eeprom.buf[0]));
-	eeprom_read(0, buf, sizeof(buf));
+	eeprom_read(0, eeprom.buf, sizeof(eeprom.buf) / sizeof(eeprom.buf[0]));
 }
 
 void eeprom_save(void)
 {
-	uint8_t buf[LEN];
-	for (unsigned int i = 0; i < sizeof(buf); i++)
-	{
-		buf[i] = i;
-	}
-
-//	eeprom_write(0, eeprom.buf, sizeof(eeprom.buf) / sizeof(eeprom.buf[0]));
-	eeprom_write(0, buf, sizeof(buf));
+	eeprom_write(0, eeprom.buf, sizeof(eeprom.buf) / sizeof(eeprom.buf[0]));
 }
