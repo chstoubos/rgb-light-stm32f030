@@ -38,11 +38,18 @@ void rgb_ctl_init(void)
 {
 	LL_TIM_EnableCounter(RGB_CTL_TIMER);
 
-	rgb_ctl_set_color(DEFAULT_COLOR, DEFAULT_BRIGHTNESS);
+	rgb_ctl_set_fixed_color(DEFAULT_COLOR, DEFAULT_BRIGHTNESS);
 
 	LL_TIM_CC_EnableChannel(RGB_CTL_TIMER, RED_CHANNEL);
 	LL_TIM_CC_EnableChannel(RGB_CTL_TIMER, GREEN_CHANNEL);
 	LL_TIM_CC_EnableChannel(RGB_CTL_TIMER, BLUE_CHANNEL);
+}
+
+static void rgb_ctl_set_color(int color, int8_t brightness)
+{
+	*rgb_pwm_vals[0] = default_rgb[color].r * brightness / 100;
+	*rgb_pwm_vals[1] = default_rgb[color].g * brightness / 100;
+	*rgb_pwm_vals[2] = default_rgb[color].b * brightness / 100;
 }
 
 /**
@@ -50,22 +57,20 @@ void rgb_ctl_init(void)
  * @param color: enum fixed_colors_t
  * @param brightness: 0-100
  */
-void rgb_ctl_set_color(int color, int8_t brightness)
+void rgb_ctl_set_fixed_color(int color, int8_t brightness)
 {
 	rgb_ctl_rainbow_stop();
 
-	rgb_ctl.mode = FIXED;
+	rgb_ctl.mode = MODE_FIXED_COLOR;
 	rgb_ctl.current_color = color;
 	rgb_ctl.brightness_lvl_prcntg = brightness;
 
-	*rgb_pwm_vals[0] = default_rgb[rgb_ctl.current_color].r * rgb_ctl.brightness_lvl_prcntg / 100;
-	*rgb_pwm_vals[1] = default_rgb[rgb_ctl.current_color].g * rgb_ctl.brightness_lvl_prcntg / 100;
-	*rgb_pwm_vals[2] = default_rgb[rgb_ctl.current_color].b * rgb_ctl.brightness_lvl_prcntg / 100;
+	rgb_ctl_set_color(rgb_ctl.current_color, rgb_ctl.brightness_lvl_prcntg);
 }
 
 void rgb_ctl_set_brightness(cmd_t cmd)
 {
-	if (rgb_ctl.mode == RAINBOW) {
+	if (rgb_ctl.mode != MODE_FIXED_COLOR) {
 		return;
 	}
 
@@ -96,18 +101,16 @@ void rgb_ctl_set_brightness(cmd_t cmd)
 		}
 	}
 
-	rgb_ctl_set_color(rgb_ctl.current_color, rgb_ctl.brightness_lvl_prcntg);
+	rgb_ctl_set_fixed_color(rgb_ctl.current_color, rgb_ctl.brightness_lvl_prcntg);
 }
 
 void rgb_ctl_rainbow_start(void)
 {
-	rgb_ctl.mode = RAINBOW;
+	rgb_ctl.mode = MODE_RAINBOW;
 	rgb_ctl.rainbow_current_step = 0;
 	rgb_ctl.rainbow_pwm_step = RAINBOW_PWM_STEP_MIN;
 
-	*rgb_pwm_vals[0] = PWM_MAX;
-	*rgb_pwm_vals[1] = 0;
-	*rgb_pwm_vals[2] = 0;
+	rgb_ctl_set_color(RED, 100);
 
 	LL_TIM_EnableCounter(RAINBOW_TIMER);
 	LL_TIM_EnableIT_UPDATE(RAINBOW_TIMER);
@@ -170,4 +173,100 @@ inline void rgb_ctl_rainbow(void)
 	}
 
 	*rgb_pwm_vals[rainbow_channels[rgb_ctl.rainbow_current_step]] = new_pwm;
+}
+
+static void rgb_ctl_flash_color(uint16_t r, uint16_t g, uint16_t b)
+{
+	// Store previous rgb values
+	uint16_t previous_r = *rgb_pwm_vals[0];
+	uint16_t previous_g = *rgb_pwm_vals[1];
+	uint16_t previous_b = *rgb_pwm_vals[2];
+
+	*rgb_pwm_vals[0] = 0;
+	*rgb_pwm_vals[1] = 0;
+	*rgb_pwm_vals[2] = 0;
+
+	delay_ms(FLASH_PERIOD_ms);
+
+	*rgb_pwm_vals[0] = r;
+	*rgb_pwm_vals[1] = g;
+	*rgb_pwm_vals[2] = b;
+
+	delay_ms(FLASH_PERIOD_ms);
+
+	*rgb_pwm_vals[0] = 0;
+	*rgb_pwm_vals[1] = 0;
+	*rgb_pwm_vals[2] = 0;
+
+	delay_ms(FLASH_PERIOD_ms);
+
+	*rgb_pwm_vals[0] = previous_r;
+	*rgb_pwm_vals[1] = previous_g;
+	*rgb_pwm_vals[2] = previous_b;
+
+
+}
+
+/**
+ * @brief
+ *
+ * 		TODO: add timer
+ */
+void rgb_ctl_custom_change_channel(void)
+{
+	// If this mode is not already running
+	if (rgb_ctl.mode != MODE_CUSTOM_COLOR)
+	{
+		rgb_ctl.mode = MODE_CUSTOM_COLOR;
+		rgb_ctl.custom_color_channel_idx = 0;
+		rgb_ctl_flash_color(PWM_MAX, 0, 0);
+		return;
+	}
+
+	rgb_ctl.custom_color_channel_idx++;
+	if (rgb_ctl.custom_color_channel_idx == 1)
+	{
+		rgb_ctl_flash_color(0, PWM_MAX, 0);
+	}
+	else if (rgb_ctl.custom_color_channel_idx == 2) {
+		rgb_ctl_flash_color(0, 0, PWM_MAX);
+	}
+	else {
+		// Flash the current color to indicate apply of color
+		rgb_ctl_flash_color(*rgb_pwm_vals[0], *rgb_pwm_vals[1], *rgb_pwm_vals[2]);
+
+		// Return to normal mode
+		rgb_ctl.mode = MODE_FIXED_COLOR;
+	}
+}
+
+void rgb_ctl_custom_color_run(cmd_t cmd)
+{
+	if (rgb_ctl.mode != MODE_CUSTOM_COLOR) {
+		return;
+	}
+
+	int32_t channel_val = *rgb_pwm_vals[rgb_ctl.custom_color_channel_idx];
+
+	if (cmd == STEP_UP)
+	{
+		channel_val += CUSTOM_COLOR_STEP;
+		if (channel_val > PWM_MAX) {
+			channel_val = PWM_MAX;
+		}
+	}
+	else if (cmd == STEP_DOWN)
+	{
+		channel_val -= CUSTOM_COLOR_STEP;
+		if (channel_val < 0) {
+			channel_val = 0;
+		}
+	}
+
+	*rgb_pwm_vals[rgb_ctl.custom_color_channel_idx] = channel_val;
+}
+
+void rgb_ctl_custom_color_save(void)
+{
+
 }

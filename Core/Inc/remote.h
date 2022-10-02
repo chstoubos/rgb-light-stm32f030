@@ -74,6 +74,9 @@ typedef struct {
 	volatile uint8_t state;
 	uint32_t ir_raw_data;
 	volatile uint8_t on_key_press_flag;
+	uint32_t last_key_pressed;
+	unsigned int key_presses_num;
+	unsigned int save_cfg_flag;
 } remote_t;
 
 extern remote_t remote;

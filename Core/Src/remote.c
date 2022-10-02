@@ -11,6 +11,8 @@ remote_t remote = {0};
 
 void remote_init(void)
 {
+	remote.key_presses_num = 0;
+
 	LL_TIM_EnableCounter(REMOTE_TIMER);
 	LL_TIM_EnableIT_UPDATE(REMOTE_TIMER);
 }
@@ -18,29 +20,61 @@ void remote_init(void)
 static uint8_t is_no_repeat_key(uint32_t key)
 {
 	if (key == KEY_VOL_UP || key == KEY_VOL_DOWN ||
-		key == KEY_NEXT || key == KEY_PREV) {
+		key == KEY_NEXT || key == KEY_PREV ||
+		key == KEY_CH_MINUS || key == KEY_CH_PLUS ) {
 		return 0;
 	}
 
 	return 1;
 }
 
+/**
+ * @brief Detect long presses in keys 0-9
+ *
+ * @param key
+ * @param last_key
+ */
+static void on_nums_repeat(uint32_t key, uint32_t last_key)
+{
+	if (key == last_key) {
+		remote.key_presses_num++;
+
+		if (remote.key_presses_num >= 20) {
+			save_cfg_flag = 1;
+			remote.key_presses_num = 0;
+		}
+	}
+	else {
+		remote.key_presses_num = 0;
+	}
+
+	remote.last_key_pressed = remote.ir_raw_data;
+}
+
 void remote_on_key_press(void)
 {
-	if (remote.on_key_press_flag == IR_DATA_READY_FLAG_REPEAT) {
+	if (remote.on_key_press_flag == IR_DATA_READY_FLAG_REPEAT)
+	{
+		on_nums_repeat(remote.ir_raw_data, remote.last_key_pressed);
+
 		if (is_no_repeat_key(remote.ir_raw_data)) {
 			return;
 		}
 	}
+	else {
+		remote.key_presses_num = 0;
+	}
 
 	switch (remote.ir_raw_data) {
 		case KEY_CH_MINUS:
-			rgb_ctl_rainbow_start();
+			rgb_ctl_custom_color_run(STEP_DOWN);
+//			rgb_ctl_rainbow_start();
 			break;
 		case KEY_CH:
+			rgb_ctl_custom_change_channel();
 			break;
 		case KEY_CH_PLUS:
-			rgb_ctl_rainbow_stop();
+			rgb_ctl_custom_color_run(STEP_UP);
 			break;
 		case KEY_PREV:
 			//speed - for effect
@@ -51,7 +85,7 @@ void remote_on_key_press(void)
 			//speed + for effect
 			break;
 		case KEY_PLAY_PAUSE:
-			rgb_ctl_set_color(WHITE, 0);
+			rgb_ctl_set_fixed_color(WHITE, 0);
 			//power off / sleep
 			break;
 		case KEY_VOL_DOWN:
@@ -63,7 +97,7 @@ void remote_on_key_press(void)
 		case KEY_EQ:
 			break;
 		case KEY_0:
-			rgb_ctl_set_color(WHITE, 100);
+			rgb_ctl_set_fixed_color(WHITE, 100);
 			break;
 		case KEY_100: 	//night mode
 			// sleep w/ timer
@@ -72,31 +106,31 @@ void remote_on_key_press(void)
 			// sleep w/ timer and stays on during night
 			break;
 		case KEY_1:
-			rgb_ctl_set_color(RED, 100);
+			rgb_ctl_set_fixed_color(RED, 100);
 			break;
 		case KEY_2:
-			rgb_ctl_set_color(GREEN, 100);
+			rgb_ctl_set_fixed_color(GREEN, 100);
 			break;
 		case KEY_3:
-			rgb_ctl_set_color(BLUE, 100);
+			rgb_ctl_set_fixed_color(BLUE, 100);
 			break;
 		case KEY_4:
-			rgb_ctl_set_color(PURPLE, 100);
+			rgb_ctl_set_fixed_color(PURPLE, 100);
 			break;
 		case KEY_5:
-			rgb_ctl_set_color(YELLOW, 100);
+			rgb_ctl_set_fixed_color(YELLOW, 100);
 			break;
 		case KEY_6:
-			rgb_ctl_set_color(ORANGE, 100);
+			rgb_ctl_set_fixed_color(ORANGE, 100);
 			break;
 		case KEY_7:
-			rgb_ctl_set_color(CYAN, 100);
+			rgb_ctl_set_fixed_color(CYAN, 100);
 			break;
 		case KEY_8:
-			rgb_ctl_set_color(TURQUISE, 100);
+			rgb_ctl_set_fixed_color(TURQUISE, 100);
 			break;
 		case KEY_9:
-			rgb_ctl_set_color(PINK, 100);
+			rgb_ctl_set_fixed_color(PINK, 100);
 			break;
 		default:
 			break;

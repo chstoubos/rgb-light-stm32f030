@@ -68,6 +68,8 @@ void dbg_print(const char* data)
 	}
 }
 
+unsigned int save_cfg_flag = 0;
+
 /* USER CODE END 0 */
 
 /**
@@ -115,11 +117,11 @@ int main(void)
 
 	delay_ms(50);
 
-	eeprom_load();
-	if (eeprom.cfg.version != EEPROM_VERSION) {
-		eeprom_set_defaults();
-		eeprom_save();
-	}
+//	eeprom_load();
+//	if (eeprom.cfg.version != EEPROM_VERSION) {
+//		eeprom_set_defaults();
+//		eeprom_save();
+//	}
 
   /* USER CODE END 2 */
 
@@ -135,6 +137,12 @@ int main(void)
 	  {
 		  remote_on_key_press();
 		  remote.on_key_press_flag = 0;
+	  }
+
+	  if (save_cfg_flag)
+	  {
+		  save_cfg_flag = 0;
+//		  eeprom_save();
 	  }
   }
   /* USER CODE END 3 */

@@ -35,11 +35,14 @@
 #define RAINBOW_PWM_STEP_MIN	1U
 #define RAINBOW_PWM_STEP_MAX	1000U
 
+#define FLASH_PERIOD_ms			250U
+#define CUSTOM_COLOR_STEP		100U
+
 typedef enum {
-	FIXED = 0,
-	RAINBOW,
-	SLEEP_TIMER,
-	SLEEP_NO_TIMER
+	MODE_FIXED_COLOR = 0,
+	MODE_RAINBOW,
+	MODE_SLEEP_TIMER,
+	MODE_CUSTOM_COLOR
 }rgb_mode_t;
 
 typedef enum {
@@ -74,16 +77,20 @@ typedef struct {
 
 	uint8_t rainbow_current_step;
 	uint16_t rainbow_pwm_step;
+
+	uint8_t custom_color_channel_idx;
 }rgb_ctl_t;
 
 extern rgb_t default_rgb[COLORS_NUM];
 
 void rgb_ctl_init(void);
-void rgb_ctl_set_color(int color, int8_t brightness);
+void rgb_ctl_set_fixed_color(int color, int8_t brightness);
 void rgb_ctl_set_brightness(cmd_t cmd);
 void rgb_ctl_rainbow_start(void);
 void rgb_ctl_rainbow_stop(void);
 void rgb_ctl_rainbow_set_speed(cmd_t cmd);
 void rgb_ctl_rainbow(void);
+void rgb_ctl_custom_change_channel(void);
+void rgb_ctl_custom_color_run(cmd_t cmd);
 
 #endif /* INC_RGB_CTL_H_ */
