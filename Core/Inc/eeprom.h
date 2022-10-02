@@ -8,15 +8,19 @@
 #ifndef INC_EEPROM_H_
 #define INC_EEPROM_H_
 
-#define EEPROM_I2C				I2C1
-#define EEPROM_I2C_ADDRESS		(0x50<<1)
-#define EEPROM_PAGE_SIZE		32U
+#define EEPROM_I2C						I2C1
+#define EEPROM_I2C_ADDRESS				(0x50<<1)
+#define EEPROM_PAGE_SIZE				32U
+#define EEPROM_WRITE_PAGE_DELAY_ms		8U		//4ms is marginal so x2
 
-#define EEPROM_VERSION			0x00
+#define EEPROM_VERSION					0x00
 
 typedef struct {
 	uint16_t version;
-//	rgb_t colors[COLORS_NUM];
+	rgb_mode_t last_known_mode;
+	uint16_t rainbow_speed;
+	int8_t brightness;
+	rgb_t colors[COLORS_NUM];
 }eeprom_data_t;
 
 typedef union {
