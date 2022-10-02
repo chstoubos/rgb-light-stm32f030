@@ -68,16 +68,6 @@ void dbg_print(const char* data)
 	}
 }
 
-/**
- * timer mode for night blip blip for verification
- */
-
-static void peripherals_enable(void)
-{
-	LL_I2C_Enable(EEPROM_I2C);
-}
-
-
 /* USER CODE END 0 */
 
 /**
@@ -119,15 +109,23 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
-  	peripherals_enable();
+  	LL_I2C_Enable(I2C1);
 	remote_init();
 	rgb_ctl_init();
 
+	delay_ms(50);
+
+	eeprom_set_defaults();
+	eeprom_save();
+
+	delay_ms(100);
 	eeprom_load();
-	if (eeprom.cfg.version != EEPROM_VERSION) {
-		eeprom_set_defaults();
-		eeprom_save();
-	}
+
+//	eeprom_load();
+//	if (eeprom.cfg.version != EEPROM_VERSION) {
+//		eeprom_set_defaults();
+//		eeprom_save();
+//	}
 
   /* USER CODE END 2 */
 

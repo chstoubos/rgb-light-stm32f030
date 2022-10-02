@@ -16,7 +16,7 @@
 
 typedef struct {
 	uint16_t version;
-	rgb_t colors[COLORS_NUM];
+//	rgb_t colors[COLORS_NUM];
 }eeprom_data_t;
 
 typedef union {
