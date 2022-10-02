@@ -48,10 +48,10 @@ static int eeprom_write(uint16_t addr, uint8_t *data, uint16_t len)
 
 		// Send EEPROM address to write
 		while (!LL_I2C_IsActiveFlag_TXE(EEPROM_I2C)) ;
-		LL_I2C_TransmitData8(EEPROM_I2C, addr & 0xFF);
+		LL_I2C_TransmitData8(EEPROM_I2C, (addr >> 8) & 0xFF);
 
 		while (!LL_I2C_IsActiveFlag_TXE(EEPROM_I2C)) ;
-		LL_I2C_TransmitData8(EEPROM_I2C, (addr >> 8) & 0xFF);
+		LL_I2C_TransmitData8(EEPROM_I2C, addr & 0xFF);
 
 		// Send data
 		for (unsigned int j = 0; j < transfer_size; j++)
@@ -92,19 +92,18 @@ static int eeprom_read(uint16_t addr, uint8_t *data, uint16_t len)
 						EEPROM_I2C,
 						EEPROM_I2C_ADDRESS,
 						LL_I2C_ADDRSLAVE_7BIT,
-						len,
-						LL_I2C_MODE_AUTOEND,
+						sizeof(addr),
+						LL_I2C_MODE_SOFTEND,
 						LL_I2C_GENERATE_START_WRITE);
 
 	// Send address to write
 	while (!LL_I2C_IsActiveFlag_TXE(EEPROM_I2C)) ;
-	LL_I2C_TransmitData8(EEPROM_I2C, addr & 0xFF);
-
-	while (!LL_I2C_IsActiveFlag_TXE(EEPROM_I2C)) ;
 	LL_I2C_TransmitData8(EEPROM_I2C, (addr >> 8) & 0xFF);
 
-	while(!LL_I2C_IsActiveFlag_STOP(EEPROM_I2C)) ;
-	LL_I2C_ClearFlag_STOP(EEPROM_I2C);
+	while (!LL_I2C_IsActiveFlag_TXE(EEPROM_I2C)) ;
+	LL_I2C_TransmitData8(EEPROM_I2C, addr & 0xFF);
+
+	while (!LL_I2C_IsActiveFlag_TC(EEPROM_I2C)) ;
 
 	// Repeated start
 	LL_I2C_HandleTransfer(
