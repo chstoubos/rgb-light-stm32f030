@@ -40,7 +40,7 @@ static void on_nums_repeat(uint32_t key, uint32_t last_key)
 		remote.key_presses_num++;
 
 		if (remote.key_presses_num >= LONG_PRESS_KEY_PRESS_NUMS) {
-			save_cfg_flag = 1;
+			remote.on_long_press_flag = 1;
 			remote.key_presses_num = 0;
 		}
 	}
@@ -49,6 +49,53 @@ static void on_nums_repeat(uint32_t key, uint32_t last_key)
 	}
 
 	remote.last_key_pressed = remote.ir_raw_data;
+}
+
+/**
+ * @brief Long press on numeric key saves the current
+ * 	      color in the memory
+ *
+ * @param key
+ */
+void remote_on_long_press(uint32_t key)
+{
+	unsigned int color_idx = 0;
+	switch (key) {
+		case KEY_0:
+			color_idx = 0;
+			break;
+		case KEY_1:
+			color_idx = 1;
+			break;
+		case KEY_2:
+			color_idx = 2;
+			break;
+		case KEY_3:
+			color_idx = 3;
+			break;
+		case KEY_4:
+			color_idx = 4;
+			break;
+		case KEY_5:
+			color_idx = 5;
+			break;
+		case KEY_6:
+			color_idx = 6;
+			break;
+		case KEY_7:
+			color_idx = 7;
+			break;
+		case KEY_8:
+			color_idx = 8;
+			break;
+		case KEY_9:
+			color_idx = 9;
+			break;
+		default:
+			return;
+	}
+
+	rgb_ctl_custom_color_save(color_idx);
 }
 
 void remote_on_key_press(void)
@@ -68,7 +115,6 @@ void remote_on_key_press(void)
 	switch (remote.ir_raw_data) {
 		case KEY_CH_MINUS:
 			rgb_ctl_custom_color_run(STEP_DOWN);
-//			rgb_ctl_rainbow_start();
 			break;
 		case KEY_CH:
 			rgb_ctl_custom_change_channel();
@@ -85,8 +131,7 @@ void remote_on_key_press(void)
 			//speed + for effect
 			break;
 		case KEY_PLAY_PAUSE:
-			rgb_ctl_set_fixed_color(WHITE, 0);
-			//power off / sleep
+			rgb_ctl_rainbow_start();
 			break;
 		case KEY_VOL_DOWN:
 			rgb_ctl_set_brightness(STEP_DOWN);
@@ -95,6 +140,7 @@ void remote_on_key_press(void)
 			rgb_ctl_set_brightness(STEP_UP);
 			break;
 		case KEY_EQ:
+			// Restore defaults (?)
 			break;
 		case KEY_0:
 			rgb_ctl_set_fixed_color(WHITE, 100);

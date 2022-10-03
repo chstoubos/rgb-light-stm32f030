@@ -38,7 +38,6 @@ extern "C" {
 #include "stm32f0xx_ll_pwr.h"
 #include "stm32f0xx_ll_dma.h"
 #include "stm32f0xx_ll_tim.h"
-#include "stm32f0xx_ll_usart.h"
 #include "stm32f0xx_ll_gpio.h"
 
 #if defined(USE_FULL_ASSERT)
@@ -80,10 +79,6 @@ void Error_Handler(void);
 #define IR_RECV_Pin LL_GPIO_PIN_0
 #define IR_RECV_GPIO_Port GPIOA
 #define IR_RECV_EXTI_IRQn EXTI0_1_IRQn
-#define PHOTORESISTOR_Pin LL_GPIO_PIN_1
-#define PHOTORESISTOR_GPIO_Port GPIOA
-#define DBG_Pin LL_GPIO_PIN_5
-#define DBG_GPIO_Port GPIOA
 #define BLUE_PWM_Pin LL_GPIO_PIN_6
 #define BLUE_PWM_GPIO_Port GPIOA
 #define GREEN_PWM_Pin LL_GPIO_PIN_7
@@ -103,6 +98,8 @@ void Error_Handler(void);
                                                                  0 bit  for subpriority */
 #endif
 /* USER CODE BEGIN Private defines */
+
+//#define DBG_ENABLED
 
 #define delay_ms(x)					LL_mDelay(x)
 

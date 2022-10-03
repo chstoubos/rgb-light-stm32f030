@@ -131,9 +131,6 @@ static int eeprom_read(uint16_t addr, uint8_t *data, uint16_t len)
 void eeprom_set_defaults(void)
 {
 	eeprom.cfg.version = EEPROM_VERSION;
-	eeprom.cfg.brightness = DEFAULT_BRIGHTNESS;
-	eeprom.cfg.rainbow_speed = RAINBOW_PWM_STEP_MIN;
-	eeprom.cfg.last_known_mode = MODE_FIXED_COLOR;
 
 	for (unsigned int i = 0; i < COLORS_NUM; i++)
 	{

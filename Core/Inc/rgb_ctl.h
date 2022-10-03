@@ -79,6 +79,7 @@ typedef struct {
 	uint16_t rainbow_pwm_step;
 
 	uint8_t custom_color_channel_idx;
+	uint16_t last_custom_color[3];
 }rgb_ctl_t;
 
 extern rgb_t default_rgb[COLORS_NUM];
@@ -92,5 +93,6 @@ void rgb_ctl_rainbow_set_speed(cmd_t cmd);
 void rgb_ctl_rainbow(void);
 void rgb_ctl_custom_change_channel(void);
 void rgb_ctl_custom_color_run(cmd_t cmd);
+void rgb_ctl_custom_color_save(unsigned int idx);
 
 #endif /* INC_RGB_CTL_H_ */

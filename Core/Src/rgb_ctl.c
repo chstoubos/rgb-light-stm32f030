@@ -45,11 +45,11 @@ void rgb_ctl_init(void)
 	LL_TIM_CC_EnableChannel(RGB_CTL_TIMER, BLUE_CHANNEL);
 }
 
-static void rgb_ctl_set_color(int color, int8_t brightness)
+static void rgb_ctl_set_color(int idx, int8_t brightness)
 {
-	*rgb_pwm_vals[0] = default_rgb[color].r * brightness / 100;
-	*rgb_pwm_vals[1] = default_rgb[color].g * brightness / 100;
-	*rgb_pwm_vals[2] = default_rgb[color].b * brightness / 100;
+	*rgb_pwm_vals[0] = eeprom.cfg.colors[idx].r * brightness / 100;
+	*rgb_pwm_vals[1] = eeprom.cfg.colors[idx].g * brightness / 100;
+	*rgb_pwm_vals[2] = eeprom.cfg.colors[idx].b * brightness / 100;
 }
 
 /**
@@ -203,8 +203,6 @@ static void rgb_ctl_flash_color(uint16_t r, uint16_t g, uint16_t b)
 	*rgb_pwm_vals[0] = previous_r;
 	*rgb_pwm_vals[1] = previous_g;
 	*rgb_pwm_vals[2] = previous_b;
-
-
 }
 
 /**
@@ -219,6 +217,11 @@ void rgb_ctl_custom_change_channel(void)
 	{
 		rgb_ctl.mode = MODE_CUSTOM_COLOR;
 		rgb_ctl.custom_color_channel_idx = 0;
+
+		rgb_ctl.last_custom_color[0] = *rgb_pwm_vals[0];
+		rgb_ctl.last_custom_color[1] = *rgb_pwm_vals[1];
+		rgb_ctl.last_custom_color[2] = *rgb_pwm_vals[2];
+
 		rgb_ctl_flash_color(PWM_MAX, 0, 0);
 		return;
 	}
@@ -264,9 +267,22 @@ void rgb_ctl_custom_color_run(cmd_t cmd)
 	}
 
 	*rgb_pwm_vals[rgb_ctl.custom_color_channel_idx] = channel_val;
+	rgb_ctl.last_custom_color[rgb_ctl.custom_color_channel_idx] = channel_val;
 }
 
-void rgb_ctl_custom_color_save(void)
+void rgb_ctl_custom_color_save(unsigned int idx)
 {
+	// Save the current color in the selected memory
+	eeprom.cfg.colors[idx].r = rgb_ctl.last_custom_color[0];
+	eeprom.cfg.colors[idx].g = rgb_ctl.last_custom_color[1];
+	eeprom.cfg.colors[idx].b = rgb_ctl.last_custom_color[2];
 
+	rgb_ctl_flash_color(
+			rgb_ctl.last_custom_color[0],
+			rgb_ctl.last_custom_color[1],
+			rgb_ctl.last_custom_color[2]);
+
+	rgb_ctl_set_fixed_color(idx, 100);
+
+	save_cfg_flag = 1;
 }

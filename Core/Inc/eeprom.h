@@ -13,13 +13,10 @@
 #define EEPROM_PAGE_SIZE				32U
 #define EEPROM_WRITE_PAGE_DELAY_ms		8U		//4ms is marginal so x2
 
-#define EEPROM_VERSION					0x01
+#define EEPROM_VERSION					0x03
 
 typedef struct {
 	uint16_t version;
-	rgb_mode_t last_known_mode;
-	uint16_t rainbow_speed;
-	int8_t brightness;
 	rgb_t colors[COLORS_NUM];
 }eeprom_data_t;
 

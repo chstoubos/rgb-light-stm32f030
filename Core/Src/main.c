@@ -48,7 +48,6 @@
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM14_Init(void);
-static void MX_USART1_UART_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM16_Init(void);
 static void MX_I2C1_Init(void);
@@ -59,6 +58,7 @@ static void MX_I2C1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+#ifdef DBG_ENABLED
 void dbg_print(const char* data)
 {
 	while (*data)
@@ -67,6 +67,7 @@ void dbg_print(const char* data)
 		while (!LL_USART_IsActiveFlag_TXE(DBG_USART)) ;
 	}
 }
+#endif
 
 unsigned int save_cfg_flag = 0;
 
@@ -105,7 +106,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM14_Init();
-  MX_USART1_UART_Init();
   MX_TIM3_Init();
   MX_TIM16_Init();
   MX_I2C1_Init();
@@ -139,10 +139,16 @@ int main(void)
 		  remote.on_key_press_flag = 0;
 	  }
 
+	  if (remote.on_long_press_flag)
+	  {
+		  remote.on_long_press_flag = 0;
+		  remote_on_long_press(remote.ir_raw_data);
+	  }
+
 	  if (save_cfg_flag)
 	  {
 		  save_cfg_flag = 0;
-//		  eeprom_save();
+		  eeprom_save();
 	  }
   }
   /* USER CODE END 3 */
@@ -192,7 +198,6 @@ void SystemClock_Config(void)
   }
   LL_Init1msTick(48000000);
   LL_SetSystemCoreClock(48000000);
-  LL_RCC_SetUSARTClockSource(LL_RCC_USART1_CLKSOURCE_PCLK1);
   LL_RCC_SetI2CClockSource(LL_RCC_I2C1_CLKSOURCE_HSI);
 }
 
@@ -412,66 +417,6 @@ static void MX_TIM16_Init(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  LL_USART_InitTypeDef USART_InitStruct = {0};
-
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  /* Peripheral clock enable */
-  LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_USART1);
-
-  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-  /**USART1 GPIO Configuration
-  PA2   ------> USART1_TX
-  PA3   ------> USART1_RX
-  */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_2;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_3;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  USART_InitStruct.BaudRate = 1000000;
-  USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
-  USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
-  USART_InitStruct.Parity = LL_USART_PARITY_NONE;
-  USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
-  USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
-  USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
-  LL_USART_Init(USART1, &USART_InitStruct);
-  LL_USART_DisableIT_CTS(USART1);
-  LL_USART_ConfigAsyncMode(USART1);
-  LL_USART_Enable(USART1);
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
-
-/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -479,15 +424,11 @@ static void MX_USART1_UART_Init(void)
 static void MX_GPIO_Init(void)
 {
   LL_EXTI_InitTypeDef EXTI_InitStruct = {0};
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOF);
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
-
-  /**/
-  LL_GPIO_ResetOutputPin(DBG_GPIO_Port, DBG_Pin);
 
   /**/
   LL_SYSCFG_SetEXTISource(LL_SYSCFG_EXTI_PORTA, LL_SYSCFG_EXTI_LINE0);
@@ -504,20 +445,6 @@ static void MX_GPIO_Init(void)
   EXTI_InitStruct.Mode = LL_EXTI_MODE_IT;
   EXTI_InitStruct.Trigger = LL_EXTI_TRIGGER_RISING_FALLING;
   LL_EXTI_Init(&EXTI_InitStruct);
-
-  /**/
-  GPIO_InitStruct.Pin = PHOTORESISTOR_Pin;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(PHOTORESISTOR_GPIO_Port, &GPIO_InitStruct);
-
-  /**/
-  GPIO_InitStruct.Pin = DBG_Pin;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(DBG_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   NVIC_SetPriority(EXTI0_1_IRQn, 0);

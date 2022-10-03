@@ -36,7 +36,7 @@
 #define		KEY_9						0xFF52AD
 #define		KEY_REPEAT					0xFFFFFFFF
 
-#define 	LONG_PRESS_KEY_PRESS_NUMS	50U
+#define 	LONG_PRESS_KEY_PRESS_NUMS	40U
 
 #define 	REMOTE_TIMER				TIM14
 #define		TCNT_FROM_US(t)				(t/64)						//64us per tick
@@ -73,18 +73,19 @@ enum ir_states {
 };
 
 typedef struct {
+	volatile uint8_t on_key_press_flag;
+	unsigned int on_long_press_flag;
 	volatile uint8_t state;
 	uint32_t ir_raw_data;
-	volatile uint8_t on_key_press_flag;
 	uint32_t last_key_pressed;
 	unsigned int key_presses_num;
-	unsigned int save_cfg_flag;
-} remote_t;
+}remote_t;
 
 extern remote_t remote;
 
 void remote_init(void);
 void remote_on_key_press(void);
+void remote_on_long_press(uint32_t key);
 void remote_ctl(void);
 
 #endif /* REMOTECONTROL_H_ */
