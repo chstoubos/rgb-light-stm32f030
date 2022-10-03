@@ -286,3 +286,16 @@ void rgb_ctl_custom_color_save(unsigned int idx)
 
 	save_cfg_flag = 1;
 }
+
+void rgb_ctl_restore_defaults(void)
+{
+	eeprom_set_defaults();
+	rgb_ctl_flash_color(
+			eeprom.cfg.colors[0].r,
+			eeprom.cfg.colors[0].g,
+			eeprom.cfg.colors[0].b);
+
+	rgb_ctl_set_fixed_color(0, 100);
+
+	save_cfg_flag = 1;
+}

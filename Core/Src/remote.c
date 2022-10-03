@@ -91,6 +91,9 @@ void remote_on_long_press(uint32_t key)
 		case KEY_9:
 			color_idx = 9;
 			break;
+		case KEY_EQ:
+			rgb_ctl_restore_defaults();
+			return;
 		default:
 			return;
 	}

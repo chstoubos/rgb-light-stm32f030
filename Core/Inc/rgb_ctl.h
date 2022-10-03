@@ -94,5 +94,6 @@ void rgb_ctl_rainbow(void);
 void rgb_ctl_custom_change_channel(void);
 void rgb_ctl_custom_color_run(cmd_t cmd);
 void rgb_ctl_custom_color_save(unsigned int idx);
+void rgb_ctl_restore_defaults(void);
 
 #endif /* INC_RGB_CTL_H_ */
