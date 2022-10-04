@@ -212,6 +212,8 @@ static void rgb_ctl_flash_color(uint16_t r, uint16_t g, uint16_t b)
  */
 void rgb_ctl_custom_change_channel(void)
 {
+	rgb_ctl.custom_color_cnt = 0;
+
 	// If this mode is not already running
 	if (rgb_ctl.mode != MODE_CUSTOM_COLOR)
 	{
@@ -248,6 +250,7 @@ void rgb_ctl_custom_color_run(cmd_t cmd)
 	if (rgb_ctl.mode != MODE_CUSTOM_COLOR) {
 		return;
 	}
+	rgb_ctl.custom_color_cnt = 0;
 
 	int32_t channel_val = *rgb_pwm_vals[rgb_ctl.custom_color_channel_idx];
 
@@ -298,4 +301,19 @@ void rgb_ctl_restore_defaults(void)
 	rgb_ctl_set_fixed_color(0, 100);
 
 	save_cfg_flag = 1;
+}
+
+void rgb_ctl_custom_color_timeout(void)
+{
+	if (rgb_ctl.mode == MODE_CUSTOM_COLOR)
+	{
+		rgb_ctl.custom_color_cnt++;
+		if (rgb_ctl.custom_color_cnt >= CUSTOM_COLOR_TIMEOUT) {
+			rgb_ctl_flash_color(
+					rgb_ctl.last_custom_color[0],
+					rgb_ctl.last_custom_color[1],
+					rgb_ctl.last_custom_color[2]);
+			rgb_ctl.mode = MODE_FIXED_COLOR;
+		}
+	}
 }

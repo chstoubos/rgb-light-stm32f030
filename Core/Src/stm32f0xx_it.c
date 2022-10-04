@@ -180,6 +180,25 @@ void TIM16_IRQHandler(void)
   /* USER CODE END TIM16_IRQn 1 */
 }
 
+/**
+  * @brief This function handles TIM17 global interrupt.
+  */
+void TIM17_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM17_IRQn 0 */
+
+	// 500ms generic timekeeping
+	if (LL_TIM_IsActiveFlag_UPDATE(TIM17)) {
+		LL_TIM_ClearFlag_UPDATE(TIM17);
+		rgb_ctl_custom_color_timeout();
+	}
+
+  /* USER CODE END TIM17_IRQn 0 */
+  /* USER CODE BEGIN TIM17_IRQn 1 */
+
+  /* USER CODE END TIM17_IRQn 1 */
+}
+
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */

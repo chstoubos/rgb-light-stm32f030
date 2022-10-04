@@ -101,12 +101,8 @@ void Error_Handler(void);
 
 //#define DBG_ENABLED
 
+#define GENERIC_TIMER				TIM17			// 500ms IT
 #define delay_ms(x)					LL_mDelay(x)
-
-#define DBG_USART					USART1
-#define DBG_TOGGLE					LL_GPIO_TogglePin(DBG_GPIO_Port, DBG_Pin)
-#define DBG_HIGH					LL_GPIO_SetOutputPin(DBG_GPIO_Port, DBG_Pin)
-#define DBG_LOW						LL_GPIO_ResetOutputPin(DBG_GPIO_Port, DBG_Pin)
 
 extern unsigned int save_cfg_flag;
 

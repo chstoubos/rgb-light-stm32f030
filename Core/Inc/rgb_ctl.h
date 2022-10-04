@@ -37,6 +37,7 @@
 
 #define FLASH_PERIOD_ms			250U
 #define CUSTOM_COLOR_STEP		100U
+#define CUSTOM_COLOR_TIMEOUT	20U
 
 typedef enum {
 	MODE_FIXED_COLOR = 0,
@@ -80,6 +81,7 @@ typedef struct {
 
 	uint8_t custom_color_channel_idx;
 	uint16_t last_custom_color[3];
+	unsigned int custom_color_cnt;
 }rgb_ctl_t;
 
 extern rgb_t default_rgb[COLORS_NUM];
@@ -94,6 +96,7 @@ void rgb_ctl_rainbow(void);
 void rgb_ctl_custom_change_channel(void);
 void rgb_ctl_custom_color_run(cmd_t cmd);
 void rgb_ctl_custom_color_save(unsigned int idx);
+void rgb_ctl_custom_color_timeout(void);
 void rgb_ctl_restore_defaults(void);
 
 #endif /* INC_RGB_CTL_H_ */
