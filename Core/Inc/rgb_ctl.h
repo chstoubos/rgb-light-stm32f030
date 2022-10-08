@@ -55,8 +55,8 @@ typedef enum {
 	YELLOW,
 	CYAN,
 	ORANGE,
-	PINK,
-	TURQUISE
+	TURQUISE,
+	PINK
 }fixed_colors_t;
 
 typedef enum {
