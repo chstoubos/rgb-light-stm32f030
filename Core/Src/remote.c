@@ -146,7 +146,7 @@ void remote_on_key_press(void)
 			// Restore defaults (?)
 			break;
 		case KEY_0:
-			rgb_ctl_set_fixed_color(WHITE, 100);
+			rgb_ctl_set_fixed_color(0, 100);
 			break;
 		case KEY_100: 	//night mode
 			// sleep w/ timer
@@ -155,31 +155,31 @@ void remote_on_key_press(void)
 			// sleep w/ timer and stays on during night
 			break;
 		case KEY_1:
-			rgb_ctl_set_fixed_color(RED, 100);
+			rgb_ctl_set_fixed_color(1, 100);
 			break;
 		case KEY_2:
-			rgb_ctl_set_fixed_color(GREEN, 100);
+			rgb_ctl_set_fixed_color(2, 100);
 			break;
 		case KEY_3:
-			rgb_ctl_set_fixed_color(BLUE, 100);
+			rgb_ctl_set_fixed_color(3, 100);
 			break;
 		case KEY_4:
-			rgb_ctl_set_fixed_color(PURPLE, 100);
+			rgb_ctl_set_fixed_color(4, 100);
 			break;
 		case KEY_5:
-			rgb_ctl_set_fixed_color(YELLOW, 100);
+			rgb_ctl_set_fixed_color(5, 100);
 			break;
 		case KEY_6:
-			rgb_ctl_set_fixed_color(ORANGE, 100);
+			rgb_ctl_set_fixed_color(6, 100);
 			break;
 		case KEY_7:
-			rgb_ctl_set_fixed_color(CYAN, 100);
+			rgb_ctl_set_fixed_color(7, 100);
 			break;
 		case KEY_8:
-			rgb_ctl_set_fixed_color(TURQUISE, 100);
+			rgb_ctl_set_fixed_color(8, 100);
 			break;
 		case KEY_9:
-			rgb_ctl_set_fixed_color(PINK, 100);
+			rgb_ctl_set_fixed_color(9, 100);
 			break;
 		default:
 			break;

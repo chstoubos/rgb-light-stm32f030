@@ -27,7 +27,7 @@
 #define PWM_MAX					(4799 + 1)
 
 #define DEFAULT_BRIGHTNESS		100U
-#define DEFAULT_COLOR			WHITE
+#define DEFAULT_COLOR			0
 
 #define BRIGHTNESS_STEP			5
 #define BRIGHTNESS_STEP_MIN		1
@@ -47,19 +47,6 @@ typedef enum {
 }rgb_mode_t;
 
 typedef enum {
-	WHITE = 0,
-	RED,
-	GREEN,
-	BLUE,
-	PURPLE,
-	YELLOW,
-	CYAN,
-	ORANGE,
-	TURQUISE,
-	PINK
-}fixed_colors_t;
-
-typedef enum {
 	STEP_UP = 0,
 	STEP_DOWN
 }cmd_t;
@@ -74,7 +61,7 @@ typedef struct {
 typedef struct {
 	rgb_mode_t mode;
 	int8_t brightness_lvl_prcntg;
-	fixed_colors_t current_color;
+	int current_color;
 
 	uint8_t rainbow_current_step;
 	uint16_t rainbow_pwm_step;

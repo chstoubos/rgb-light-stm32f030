@@ -110,7 +110,7 @@ void rgb_ctl_rainbow_start(void)
 	rgb_ctl.rainbow_current_step = 0;
 	rgb_ctl.rainbow_pwm_step = RAINBOW_PWM_STEP_MIN;
 
-	rgb_ctl_set_color(RED, 100);
+	rgb_ctl_set_color(0, 100);
 
 	LL_TIM_EnableCounter(RAINBOW_TIMER);
 	LL_TIM_EnableIT_UPDATE(RAINBOW_TIMER);
