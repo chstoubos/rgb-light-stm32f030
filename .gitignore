@@ -2,6 +2,9 @@ Debug/
 Release/
 doxygen/
 
+syscalls.c
+sysmem.c
+
 *.png
 *.logicdata
 
